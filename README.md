@@ -17,7 +17,23 @@ The system uses:
 
 ## 👥 Team Role Breakdown
 
-### 👤 You (Gemini + Input / Embeddings)
+### 👥 Frontend Team
+
+#### 👤 Parth – UI/UX + File Input
+
+* Design and implement Streamlit UI layout
+* Build file upload components for CSV and PDF
+* Display parsed invoices using Pandas tables
+* Style and improve visual clarity and responsiveness
+
+#### 👤 Parth & Sourish – Integration + Output Display
+
+* Connect Mistral and Gemini backends to frontend
+* Trigger audit and explanation functions from UI
+* Render output summaries and issues
+* Integrate charts and export options (PDF/Markdown)
+
+### 👤 Sourish – Gemini + Input / Embeddings
 
 * CSV and PDF file parsing
 * Normalizing data into a unified DataFrame
@@ -29,7 +45,7 @@ The system uses:
   * Suggestions
 * Exporting markdown/PDF reports
 
-### 👤 Teammate (Mistral + Audit Logic)
+### 👤 Prem – Mistral + Audit Logic
 
 * Build LangChain tools for audit rules:
 
@@ -85,8 +101,8 @@ invoice_audit_agent/
 
 This is parsed from CSV or PDF, and passed to:
 
-* Vector embedder (you)
-* Mistral audit agent (teammate)
+* Vector embedder (Sourish)
+* Mistral audit agent (Prem)
 
 ---
 
@@ -108,12 +124,12 @@ This is parsed from CSV or PDF, and passed to:
 }
 ```
 
-* This structure is passed from **you to your teammate**.
-* Also stored in vector DB by you.
+* This structure is passed from **Sourish to Prem**.
+* Also stored in vector DB.
 
 ---
 
-### 📉 Output Format from Mistral to You (for Gemini)
+### 📉 Output Format from Mistral to Sourish (for Gemini)
 
 ```json
 {
@@ -140,8 +156,8 @@ This is parsed from CSV or PDF, and passed to:
 }
 ```
 
-* Returned from **Mistral agent to you**
-* You use this for Gemini summaries and markdown report generation
+* Returned from **Prem to Sourish**
+* Used for Gemini summaries and markdown report generation
 
 ---
 
@@ -159,6 +175,16 @@ This is parsed from CSV or PDF, and passed to:
 | 8   | Charting and final audit summary       |
 | 9   | Internal testing                       |
 | 10  | Polish, test, and export final reports |
+
+---
+
+## 🚀 Next Steps
+
+* [ ] Frontend Member 1: Finalize UI layout and file upload modules
+* [ ] Frontend Member 2: Integrate Mistral/Gemini pipelines and display results
+* [ ] Backend (Prem): Build and test audit tools, connect RAG model
+* [ ] Gemini + Embedding (Sourish): Finalize file parsing, embed data, create Gemini prompt chains
+* [ ] All: Test integration flow from input → audit → summary → export
 
 ---
 
