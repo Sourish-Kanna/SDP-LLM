@@ -1,4 +1,4 @@
-# 🧾 Autonomous Audit+ – A Hybrid Agentic Financial Document Auditor
+# 📟 Autonomous Audit+ – A Hybrid Agentic Financial Document Auditor
 
 ## 🔍 Overview
 
@@ -6,13 +6,11 @@ Autonomous Audit+ is a hybrid multi-agent invoice auditing system that combines 
 
 * Detect financial issues
 * Generate plain-English explanations
-* Answer natural language questions
-* Output risk-scored reports
 
 The system uses:
 
 * **Mistral 7B via Groq + LangChain** for rule-based and RAG audit logic
-* **Gemini 1.5 Pro** for fluent summaries, suggestions, and Q\&A
+* **Gemini 1.5 Pro** for fluent summaries and suggestions
 * **Streamlit** as the UI frontend
 
 ---
@@ -28,7 +26,7 @@ The system uses:
 
   * Audit summary
   * Multi-agent role simulation (accountant, legal, manager)
-  * Suggestions and Q\&A
+  * Suggestions
 * Exporting markdown/PDF reports
 
 ### 👤 Teammate (Mistral + Audit Logic)
@@ -48,18 +46,18 @@ The system uses:
 
 ## 📁 Folder Structure
 
-``` text
+```text
 invoice_audit_agent/
 ├── app.py                    # Streamlit app UI
-├── embeddings/               # Embedding logic (you)
+├── embeddings/               # Embedding logic 
 │   ├── vector_store.py
 │   └── retriever_utils.py
-├── parsers/                  # PDF/CSV handling (you)
+├── parsers/                  # PDF/CSV handling 
 │   ├── csv_parser.py
 │   └── pdf_parser.py
-├── reports/                  # Gemini prompt + writer (you)
+├── reports/                  # Gemini prompt + writer 
 │   └── gemini_writer.py
-├── audit/                    # Mistral logic (teammate)
+├── audit/                    # Mistral logic 
 │   ├── audit_tools.py
 │   ├── audit_agent.py
 │   └── rag_agent.py
@@ -74,30 +72,48 @@ invoice_audit_agent/
 
 ## 📄 File Format Guidelines
 
-### ✅ Expected Fields (CSV or Extracted from PDF)
+### ✅ Initial Normalized DataFrame (After Parsing CSV/PDF)
 
-| Field        | Required | Example         |
-| ------------ | -------- | --------------- |
-| invoice\_id  | ✅        | INV-1024        |
-| vendor       | ✅        | ABC Traders     |
-| date         | ✅        | 2025-01-23      |
-| quantity     | ✅        | 250             |
-| unit\_price  | ✅        | 110.0           |
-| total        | ✅        | 27500.0         |
-| gst\_number  | Optional | 27AACCA8432H1ZQ |
-| gst\_percent | Optional | 18.0            |
-| amount\_paid | Optional | 15000.0         |
-| discount     | Optional | 8662.5          |
+| Field       | Type                |
+| ----------- | ------------------- |
+| invoice\_id | string              |
+| vendor      | string              |
+| date        | string (YYYY-MM-DD) |
+| quantity    | float               |
+| unit\_price | float               |
+| total       | float               |
 
-### 📄 PDF Support
+This is parsed from CSV or PDF, and passed to:
 
-* Must be text-based, not scanned image
-* Multi-page invoices supported
-* Extracted using `pdfplumber` with regex + fallback table parse
+* Vector embedder (you)
+* Mistral audit agent (teammate)
 
 ---
 
-## 🧾 Output JSON (From Mistral Agent)
+### 🔄 Intermediate Format to Mistral (Shared Input)
+
+```json
+{
+  "invoices": [
+    {
+      "invoice_id": "INV-101",
+      "vendor": "ABC Traders",
+      "date": "2025-01-23",
+      "quantity": 250,
+      "unit_price": 110.0,
+      "total": 27500.0
+    },
+    ...
+  ]
+}
+```
+
+* This structure is passed from **you to your teammate**.
+* Also stored in vector DB by you.
+
+---
+
+### 📉 Output Format from Mistral to You (for Gemini)
 
 ```json
 {
@@ -114,11 +130,6 @@ invoice_audit_agent/
       "severity": "high"
     }
   ],
-  "risk_score": {
-    "score": 7.5,
-    "scale": "out_of_10",
-    "risk_level": "high"
-  },
   "compliance_flags": {
     "gst_issues": 3,
     "future_dates": 1
@@ -129,9 +140,12 @@ invoice_audit_agent/
 }
 ```
 
+* Returned from **Mistral agent to you**
+* You use this for Gemini summaries and markdown report generation
+
 ---
 
-<!-- ## 🗓️ Development Timeline
+## 🗓️ Development Timeline
 
 | Day | Task                                   |
 | --- | -------------------------------------- |
@@ -142,18 +156,10 @@ invoice_audit_agent/
 | 5   | Gemini summary generation              |
 | 6   | Role-based agent views                 |
 | 7   | Duplicate detection (cross-invoice)    |
-| 8   | Risk scoring + charting                |
-| 9   | Q\&A interface                         |
+| 8   | Charting and final audit summary       |
+| 9   | Internal testing                       |
 | 10  | Polish, test, and export final reports |
 
---- -->
+---
 
-## 🚀 Next Steps
-
-* [ ] Finalize file input format and validators
-* [ ] Complete PDF parser to support multipage
-* [ ] Build vector store and share retriever
-* [ ] Mistral agent integration with tools
-* [ ] Gemini prompt chaining and report writing
-
-<!-- --- -->
+> This README serves as the central reference document for planning, development, and integration. Keep it updated as modules evolve.
