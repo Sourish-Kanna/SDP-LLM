@@ -20,22 +20,40 @@ def parse_csv(file_path):
 def df_to_invoices(df):
     """
     Converts a DataFrame to a list of invoice dictionaries.
+    Assumes the DataFrame has columns: invoice_id, vendor, date, product, quantity, unit_price, total.
 
     Args:
-    df (pandas.DataFrame): The DataFrame containing invoice data.
+        df (pandas.DataFrame): DataFrame containing invoice data.
 
     Returns:
-    list: A list of dictionaries representing invoices.
+        list: A list of invoice dictionaries, each with a list of products.
     """
     invoices = []
-    for _, row in df.iterrows():
+    if df is None or df.empty:
+        return invoices
+
+    # Group by invoice_id, vendor, date to collect products per invoice
+    group_cols = ['invoice_id', 'vendor', 'date']
+    required_cols = group_cols + ['product', 'quantity', 'unit_price', 'total']
+    if not all(col in df.columns for col in required_cols):
+        return invoices
+
+    grouped = df.groupby(group_cols)
+    for (invoice_id, vendor, date), group in grouped:
+        products = []
+        for _, row in group.iterrows():
+            product = {
+                "name": row['product'],
+                "quantity": row['quantity'],
+                "unit_price": row['unit_price'],
+                "total": row['total']
+            }
+            products.append(product)
         invoice = {
-            "invoice_id": row.get("invoice_id"),
-            "vendor": row.get("vendor"),
-            "date": row.get("date"),
-            "quantity": row.get("quantity"),
-            "unit_price": row.get("unit_price"),
-            "total": row.get("total")
+            "invoice_id": invoice_id,
+            "vendor": vendor,
+            "date": date,
+            "products": products
         }
         invoices.append(invoice)
     return invoices
