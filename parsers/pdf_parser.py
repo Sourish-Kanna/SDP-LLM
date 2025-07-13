@@ -1,8 +1,4 @@
 
-import pandas as pd
-import re
-
-
 def parse_pdf(file_path):
     """
     Parses a PDF file and extracts text content into a dictionary.
@@ -90,11 +86,20 @@ def df_to_invoices(data_dict):
 
     return invoices
 
+def pdf_parser(file_path):
+    """
+    Parses a PDF file and converts it to a list of invoice dictionaries.
+    Args:
+        file_path (str): The path to the PDF file.
+    Returns:
+        list: A list of dictionaries representing invoices.
+    """
+    pdf_text = parse_pdf(file_path)
+    invoices = df_to_invoices(pdf_text)
+    return invoices
 
 
 if __name__ == "__main__":
     import pprint
-    pdf_text = parse_pdf('sample_data/mul_1.pdf')
-    # pprint.pprint(pdf_text)  # Display all extracted text
-    invoices = df_to_invoices(pdf_text)
-    pprint.pprint(invoices)  # Display all invoices
+    invoices = pdf_parser('./sample_data/mul_1.pdf')
+    pprint.pprint(invoices, indent=2)
