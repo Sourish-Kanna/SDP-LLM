@@ -1,4 +1,3 @@
-
 from parsers.csv_parser import csv_parser
 from parsers.pdf_parser import pdf_parser
 from Llama.llama_audit_summary import LlamaAuditSummarizer
@@ -19,10 +18,8 @@ def print_and_summarize(invoices, parser_name):
         console.print(markdown)
 
 if __name__ == "__main__":
-    load_dotenv()  # Load environment variables from .env file
-
+    load_dotenv()
     csv_invoices = csv_parser('./sample_data/test1.csv')
     print_and_summarize(csv_invoices, "CSV Parser")
-
     pdf_invoices = pdf_parser('./sample_data/mul_1.pdf')
     print_and_summarize(pdf_invoices, "PDF Parser")
