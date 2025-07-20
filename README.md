@@ -52,7 +52,7 @@ Prem creates fine-grained financial validation tools:
 
 ---
 
-### 🔄 Integration
+### ↺ Integration
 
 Prem will:
 
@@ -70,7 +70,7 @@ Here’s how Sourish’s work maps to the three roles used in LLaMA prompting:
 
 ### ⚖️ Legal Role (Prompt Design)
 
-* 🧾 Craft prompts asking for legal compliance issues based on audit JSON
+* 📜 Craft prompts asking for legal compliance issues based on audit JSON
 * 🧠 Ask LLaMA to identify missing fields like GST, invoice format, future dates
 
 ### 👔 Manager Role (Prompt Design)
@@ -81,9 +81,11 @@ Here’s how Sourish’s work maps to the three roles used in LLaMA prompting:
 ### 🧮 Accountant Role (Prompt Design)
 
 * 🔍 Ask LLaMA to verify totals, identify calculation errors, zero values
+
 * ✏️ Summarize per-invoice anomalies in clear English
 
 * Receives audit output (JSON) from Prem
+
 * Sends prompt to LLaMA 3 via Groq for:
 
   * Summary generation
@@ -103,7 +105,7 @@ Parth’s UI displays outputs aligned with each expert role:
 
 ### ⚖️ Legal View
 
-* 🧾 Render missing GST fields, invalid GSTINs, and date flags
+* 📜 Render missing GST fields, invalid GSTINs, and date flags
 * ⚠️ Show legal risk badges or highlights in UI
 
 ### 👔 Manager View
@@ -111,9 +113,10 @@ Parth’s UI displays outputs aligned with each expert role:
 * 📊 Display spending distribution, vendor risk, frequent invoice patterns
 * 📈 Include bar charts / graphs for visual summaries
 
-### 🧮 Accountant View
+### 🧲 Accountant View
 
-* 🧮 Highlight mismatched totals or zero values directly in invoice table
+* 🧲 Highlight mismatched totals or zero values directly in invoice table
+
 * ✅ Show green checks for verified fields
 
 * Builds UI for:
@@ -122,15 +125,35 @@ Parth’s UI displays outputs aligned with each expert role:
   * Audit result visualization
   * Role-based explanations (as cards or tabs)
   * Export/download report (PDF or Markdown)
+
 * Calls FastAPI endpoints for audit and summary
+
 * Displays errors using icons/highlights (e.g., red rows, warnings)
+
 * Adds charts using Recharts or Chart.js (vendor totals, error counts)
 
 ---
 
-## 🔁 Flow Summary
+## 📁 Project File Structure
 
 ```text
+Frontend/               # React-based frontend UI (Parth)
+Backend/                # FastAPI backend for coordination (Sourish)
+Parser/                 # File input and parsing logic (Sourish)
+├── Csv parser.py
+└── PDF Parser.py
+sample_data/            # Sample CSV and PDF invoices for testing
+Llama/                  # Summary generation and prompt logic (Sourish)
+Mistal/                 # Audit tools and rule-based logic (Prem)
+Readme.md               # Project documentation
+Requirments.txt         # Python dependencies
+```
+
+---
+
+## ↻ Flow Summary
+
+```mermaid
 A[User Uploads Invoice File<br>(CSV or PDF) - React UI] --> B[FastAPI Backend<br>(Parse & Normalize - Sourish)]
 B --> C[Mistral Audit - Prem<br>(Validation & RAG Agent)]
 C --> D[Audit JSON Output]
@@ -143,8 +166,6 @@ F --> G[React UI - Parth<br>(Render Cards, Tables, Charts)]
 
 ## 🧪 Generalized JSON Input Format (to Mistral)
 
-This is the normalized input structure expected by the Mistral audit agent:
-
 ```json
 [
   {
@@ -154,9 +175,9 @@ This is the normalized input structure expected by the Mistral audit agent:
     "products": [
       {
         "name": "Item Name",
-        "quantity": float,
-        "unit_price": float,
-        "total": float
+        "quantity": 0.0,
+        "unit_price": 0.0,
+        "total": 0.0
       }
     ]
   }
@@ -168,15 +189,13 @@ This is the normalized input structure expected by the Mistral audit agent:
 
 ---
 
-## 📥 Generalized JSON Output Format (from Mistral)
-
-The following structure is returned by the Mistral audit logic for use by LLaMA 3:
+## 📅 Generalized JSON Output Format (from Mistral)
 
 ```json
 {
   "summary": {
-    "total_invoices": int,
-    "vendors": int,
+    "total_invoices": 0,
+    "vendors": 0,
     "date_range": {
       "start": "YYYY-MM-DD",
       "end": "YYYY-MM-DD"
@@ -199,55 +218,16 @@ The following structure is returned by the Mistral audit logic for use by LLaMA 
   "vendor_summary": [
     {
       "vendor": "string",
-      "invoice_count": int,
-      "total_billed": float
+      "invoice_count": 0,
+      "total_billed": 0.0
     }
   ],
   "invoice_patterns": {
-    "duplicate_amounts": [ { "amount": float, "invoice_ids": ["string"] } ],
-    "repeated_items": [ { "item": "string", "occurrences": int } ]
+    "duplicate_amounts": [ { "amount": 0.0, "invoice_ids": ["string"] } ],
+    "repeated_items": [ { "item": "string", "occurrences": 0 } ]
   }
 }
 ```
 
 * This structure ensures full compatibility with markdown summaries and role-based prompts for LLaMA 3.
 * Fields are grouped to support modular display by Legal, Manager, and Accountant views.
-
-```json
-[
-  {
-    "date": "2025-06-01",
-    "invoice_id": "INV-1001",
-    "vendor": "ABC Traders",
-    "products": [
-      {
-        "name": "Widget A",
-        "quantity": 10,
-        "unit_price": 500,
-        "total": 5000
-      }
-    ]
-  },
-  {
-    "date": "2025-07-15",
-    "invoice_id": "INV-1008",
-    "vendor": "DEF Industries",
-    "products": [
-      {
-        "name": "Widget H",
-        "quantity": 3,
-        "unit_price": 2000,
-        "total": 6000
-      },
-      {
-        "name": "Widget I",
-        "quantity": 2,
-        "unit_price": 1500,
-        "total": 3000
-      }
-    ]
-  }
-]
-```
-
-Prem will flatten and audit each `product` entry, checking for total mismatch, duplicate IDs, future dates, and missing values.
