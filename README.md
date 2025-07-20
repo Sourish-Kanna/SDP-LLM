@@ -147,6 +147,7 @@ Llama/                  # Summary generation and prompt logic (Sourish)
 Mistal/                 # Audit tools and rule-based logic (Prem)
 Readme.md               # Project documentation
 Requirments.txt         # Python dependencies
+test.py                 # Python test file
 ```
 
 ---
