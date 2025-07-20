@@ -2,8 +2,11 @@ pandas
 numpy
 PyPDF2
 langchain
+langchain-groq
 openai
 groq
 markdown2
 fastapi
 uvicorn
+python-dotenv
+rich
