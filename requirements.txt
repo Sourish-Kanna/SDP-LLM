@@ -1,4 +1,9 @@
 pandas
 numpy
-streamlit
 PyPDF2
+langchain
+openai
+groq
+markdown2
+fastapi
+uvicorn

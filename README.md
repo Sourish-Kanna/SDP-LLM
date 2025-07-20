@@ -2,190 +2,252 @@
 
 ## 🔍 Overview
 
-Autonomous Audit+ is a hybrid multi-agent invoice auditing system that combines rule-based logic with natural language understanding. It processes both CSV and PDF invoices to:
+Autonomous Audit+ is a multi-agent hybrid system that performs intelligent auditing on invoice documents (CSV or PDF). It uses:
 
-* Detect financial issues
-* Generate plain-English explanations
-
-The system uses:
-
-* **Mistral 7B via Groq + LangChain** for rule-based and RAG audit logic
-* **Gemini 1.5 Pro** for fluent summaries and suggestions
-* **Streamlit** as the UI frontend
+* **Mistral 7B via Groq**: For rule-based audit logic (duplicate detection, total mismatch, etc.)
+* **LLaMA 3 8B via Groq**: For markdown-formatted summaries, legal/manager/accountant role explanations, and suggestions
+* **React Frontend**: For UI/UX, visualizing audit issues, and exporting reports
+* **FastAPI Backend**: For file processing, audit orchestration, and serving frontend endpoints
 
 ---
 
-## 👥 Team Role Breakdown
+## 👥 Team Roles
 
-### 👥 Frontend Team
-
-#### 👤 Parth – UI/UX + File Input
-
-* Design and implement Streamlit UI layout
-* Build file upload components for CSV and PDF
-* Display parsed invoices using Pandas tables
-* Style and improve visual clarity and responsiveness
-
-#### 👤 Parth & Sourish – Integration + Output Display
-
-* Connect Mistral and Gemini backends to frontend
-* Trigger audit and explanation functions from UI
-* Render output summaries and issues
-* Integrate charts and export options (PDF/Markdown)
-
-### 👤 Sourish – Gemini + Input / Embeddings
-
-* CSV and PDF file parsing
-* Normalizing data into a unified DataFrame
-* Chunking and embedding documents using LangChain-compatible vector store
-* Generating Gemini prompts for:
-
-  * Audit summary
-  * Multi-agent role simulation (accountant, legal, manager)
-  * Suggestions
-* Exporting markdown/PDF reports
-
-### 👤 Prem – Mistral + Audit Logic
-
-* Build LangChain tools for audit rules:
-
-  * Total mismatch
-  * Missing fields
-  * Duplicate invoice IDs
-  * Future dates
-* Set up Mistral via Groq in LangChain agent
-* Integrate with retriever provided by you
-* Implement RAG (Retrieval-Augmented Generation) chains
-* Output structured JSON for Gemini processing
+Here’s how **Prem’s role** in the **Mistral audit logic** can be split across the three simulated agent roles: **Legal**, **Manager**, and **Accountant**. Each sub-role corresponds to a part of the audit logic implemented as LangChain tools.
 
 ---
 
-## 📁 Folder Structure
+## 👤 **Prem – Mistral + Audit Logic**
+
+### ⚖️ Legal Agent Logic
+
+Prem is responsible for implementing tools and rules that simulate legal and compliance checks:
+
+* ✅ Check **GST compliance** (e.g., GST% must be 5%, 12%, or 18%)
+* ✅ Validate **GSTIN format** (15-character alphanumeric)
+* ✅ Flag invoices with **future dates**
+* ✅ Identify **missing legal fields** (like vendor name or invoice ID)
+
+---
+
+### 👔 Manager Agent Logic
+
+Prem builds logic to simulate the financial oversight of a manager:
+
+* ✅ Detect **vendor concentration** (one vendor dominates total billing)
+* ✅ Flag **high-value invoices** or frequent identical amounts
+* ✅ Aggregate **total spending per vendor**
+* ✅ Identify **repeated patterns** (same items, prices)
+
+---
+
+### 🧮 Accountant Agent Logic
+
+Prem creates fine-grained financial validation tools:
+
+* ✅ Detect **total mismatch**: `total ≠ quantity × unit_price`
+* ✅ Identify **missing fields** in numeric columns (quantity, unit\_price)
+* ✅ Flag **zero or negative values**
+* ✅ Ensure all invoices are **numerically consistent**
+
+---
+
+### 🔄 Integration
+
+Prem will:
+
+* Implement all the above checks using LangChain tools
+* Chain them inside a Mistral-powered agent using RAG
+* Return structured output JSON
+* Parses incoming CSV/PDF (after receiving from frontend)
+* Generates document embeddings for RAG
+* Sets up Mistral 7B + Groq agent
+* Returns audit JSON summary to Sourish/frontend
+
+## 👤 **Sourish – LLaMA 3 + Summary Generator**
+
+Here’s how Sourish’s work maps to the three roles used in LLaMA prompting:
+
+### ⚖️ Legal Role (Prompt Design)
+
+* 🧾 Craft prompts asking for legal compliance issues based on audit JSON
+* 🧠 Ask LLaMA to identify missing fields like GST, invoice format, future dates
+
+### 👔 Manager Role (Prompt Design)
+
+* 📊 Request financial oversight comments: overbilling patterns, large invoices, vendor risk
+* 🧠 Ask LLaMA to suggest business improvements or controls
+
+### 🧮 Accountant Role (Prompt Design)
+
+* 🔍 Ask LLaMA to verify totals, identify calculation errors, zero values
+* ✏️ Summarize per-invoice anomalies in clear English
+
+* Receives audit output (JSON) from Prem
+* Sends prompt to LLaMA 3 via Groq for:
+
+  * Summary generation
+  * Role-based analysis (Legal, Manager, Accountant)
+  * Suggestions for future prevention
+
+* Formats LLaMA 3 output into:
+
+  * Markdown (for frontend display)
+  * PDF (optional)
+
+* Collaborates with Parth to render outputs in UI
+
+## 👤 **Parth – Frontend (React)**
+
+Parth’s UI displays outputs aligned with each expert role:
+
+### ⚖️ Legal View
+
+* 🧾 Render missing GST fields, invalid GSTINs, and date flags
+* ⚠️ Show legal risk badges or highlights in UI
+
+### 👔 Manager View
+
+* 📊 Display spending distribution, vendor risk, frequent invoice patterns
+* 📈 Include bar charts / graphs for visual summaries
+
+### 🧮 Accountant View
+
+* 🧮 Highlight mismatched totals or zero values directly in invoice table
+* ✅ Show green checks for verified fields
+
+* Builds UI for:
+
+  * Invoice upload (CSV/PDF)
+  * Audit result visualization
+  * Role-based explanations (as cards or tabs)
+  * Export/download report (PDF or Markdown)
+* Calls FastAPI endpoints for audit and summary
+* Displays errors using icons/highlights (e.g., red rows, warnings)
+* Adds charts using Recharts or Chart.js (vendor totals, error counts)
+
+---
+
+## 🔁 Flow Summary
 
 ```text
-invoice_audit_agent/
-├── app.py                    # Streamlit app UI
-├── embeddings/               # Embedding logic 
-│   ├── vector_store.py
-│   └── retriever_utils.py
-├── parsers/                  # PDF/CSV handling 
-│   ├── csv_parser.py
-│   └── pdf_parser.py
-├── reports/                  # Gemini prompt + writer 
-│   └── gemini_writer.py
-├── audit/                    # Mistral logic 
-│   ├── audit_tools.py
-│   ├── audit_agent.py
-│   └── rag_agent.py
-├── utils/
-│   └── formatter.py          # Shared helpers
-├── sample_data/              # Test files
-├── requirements.txt          # Dependencies
-└── .env                      # Secrets/API keys
+A[User Uploads Invoice File<br>(CSV or PDF) - React UI] --> B[FastAPI Backend<br>(Parse & Normalize - Sourish)]
+B --> C[Mistral Audit - Prem<br>(Validation & RAG Agent)]
+C --> D[Audit JSON Output]
+D --> E[LLaMA 3 Prompting - Sourish<br>(Summary, Roles, Suggestions)]
+E --> F[Markdown / PDF Report]
+F --> G[React UI - Parth<br>(Render Cards, Tables, Charts)]
 ```
 
 ---
 
-## 📄 File Format Guidelines
+## 🧪 Generalized JSON Input Format (to Mistral)
 
-### ✅ Initial Normalized DataFrame (After Parsing CSV/PDF)
-
-| Field       | Type                |
-| ----------- | ------------------- |
-| invoice\_id | string              |
-| vendor      | string              |
-| date        | string (YYYY-MM-DD) |
-| quantity    | float               |
-| unit\_price | float               |
-| total       | float               |
-
-This is parsed from CSV or PDF, and passed to:
-
-* Vector embedder (Sourish)
-* Mistral audit agent (Prem)
-
----
-
-### 🔄 Intermediate Format to Mistral (Shared Input)
+This is the normalized input structure expected by the Mistral audit agent:
 
 ```json
-{
-  "invoices": [
-    {
-      "invoice_id": "INV-101",
-      "vendor": "ABC Traders",
-      "date": "2025-01-23",
-      "quantity": 250,
-      "unit_price": 110.0,
-      "total": 27500.0
-    },
-    ...
-  ]
-}
+[
+  {
+    "invoice_id": "INV-XXXX",
+    "date": "YYYY-MM-DD",
+    "vendor": "Vendor Name",
+    "products": [
+      {
+        "name": "Item Name",
+        "quantity": float,
+        "unit_price": float,
+        "total": float
+      }
+    ]
+  }
+]
 ```
 
-* This structure is passed from **Sourish to Prem**.
-* Also stored in vector DB.
+* Each `products[]` entry represents one line item per invoice.
+* Fields should be validated and parsed by the backend before sending to Mistral.
 
 ---
 
-### 📉 Output Format from Mistral to Sourish (for Gemini)
+## 📥 Generalized JSON Output Format (from Mistral)
+
+The following structure is returned by the Mistral audit logic for use by LLaMA 3:
 
 ```json
 {
-  "invoice_summary": {
-    "total_invoices": 12,
-    "files_processed": ["jan.csv", "feb.pdf"]
+  "summary": {
+    "total_invoices": int,
+    "vendors": int,
+    "date_range": {
+      "start": "YYYY-MM-DD",
+      "end": "YYYY-MM-DD"
+    }
   },
   "issues": [
     {
-      "invoice_id": "INV-1024",
-      "vendor": "ABC Traders",
-      "issue_type": "Total Mismatch",
-      "description": "Total does not match quantity x unit price",
-      "severity": "high"
+      "invoice_id": "string",
+      "vendor": "string",
+      "issue_type": "string",
+      "description": "string",
+      "severity": "low | medium | high"
     }
   ],
   "compliance_flags": {
-    "gst_issues": 3,
-    "future_dates": 1
+    "future_dates": [ { "invoice_id": "string", "date": "YYYY-MM-DD" } ],
+    "missing_fields": [ { "invoice_id": "string", "field": "string" } ],
+    "invalid_gstin": [ { "invoice_id": "string", "gstin": "string" } ]
   },
-  "top_vendors": [
-    { "name": "ABC Traders", "amount_billed": 18500 }
-  ]
+  "vendor_summary": [
+    {
+      "vendor": "string",
+      "invoice_count": int,
+      "total_billed": float
+    }
+  ],
+  "invoice_patterns": {
+    "duplicate_amounts": [ { "amount": float, "invoice_ids": ["string"] } ],
+    "repeated_items": [ { "item": "string", "occurrences": int } ]
+  }
 }
 ```
 
-* Returned from **Prem to Sourish**
-* Used for Gemini summaries and markdown report generation
+* This structure ensures full compatibility with markdown summaries and role-based prompts for LLaMA 3.
+* Fields are grouped to support modular display by Legal, Manager, and Accountant views.
 
----
+```json
+[
+  {
+    "date": "2025-06-01",
+    "invoice_id": "INV-1001",
+    "vendor": "ABC Traders",
+    "products": [
+      {
+        "name": "Widget A",
+        "quantity": 10,
+        "unit_price": 500,
+        "total": 5000
+      }
+    ]
+  },
+  {
+    "date": "2025-07-15",
+    "invoice_id": "INV-1008",
+    "vendor": "DEF Industries",
+    "products": [
+      {
+        "name": "Widget H",
+        "quantity": 3,
+        "unit_price": 2000,
+        "total": 6000
+      },
+      {
+        "name": "Widget I",
+        "quantity": 2,
+        "unit_price": 1500,
+        "total": 3000
+      }
+    ]
+  }
+]
+```
 
-## 🗓️ Development Timeline
-
-| Day | Task                                   |
-| --- | -------------------------------------- |
-| 1   | UI + file upload                       |
-| 2   | File parsing + cleaning                |
-| 3   | Audit rule logic (mistral)             |
-| 4   | LangChain agent setup                  |
-| 5   | Gemini summary generation              |
-| 6   | Role-based agent views                 |
-| 7   | Duplicate detection (cross-invoice)    |
-| 8   | Charting and final audit summary       |
-| 9   | Internal testing                       |
-| 10  | Polish, test, and export final reports |
-
----
-
-## 🚀 Next Steps
-
-* [ ] Frontend Member 1: Finalize UI layout and file upload modules
-* [ ] Frontend Member 2: Integrate Mistral/Gemini pipelines and display results
-* [ ] Backend (Prem): Build and test audit tools, connect RAG model
-* [ ] Gemini + Embedding (Sourish): Finalize file parsing, embed data, create Gemini prompt chains
-* [ ] All: Test integration flow from input → audit → summary → export
-
----
-
-> This README serves as the central reference document for planning, development, and integration. Keep it updated as modules evolve.
+Prem will flatten and audit each `product` entry, checking for total mismatch, duplicate IDs, future dates, and missing values.
