@@ -1,18 +1,14 @@
-from typing import Any
 from langchain_groq import ChatGroq
 from langchain.prompts import PromptTemplate
 from langchain.schema import SystemMessage, HumanMessage
 import json
+from dotenv import load_dotenv
+
 
 
 class LlamaAuditSummarizer:
-    def __init__(self, model: str = "llama3-8b-8192", temperature: float = 0.5):
-        
-        self.chat = ChatGroq(
-            model=model,
-            temperature=temperature,
-        ) # type: ignore
-        self.prompt_template = PromptTemplate(
+
+    prompt_template = PromptTemplate(
             input_variables=["audit_json"],
             template="""
 You are a financial auditing assistant. Your task is to analyze structured audit data from three perspectives:
@@ -34,7 +30,7 @@ You are a financial auditing assistant. Your task is to analyze structured audit
 
 Respond **only in Markdown**, structured like this:
 
-```
+
 ## ⚖️ Legal Summary
 - ...
 
@@ -43,9 +39,16 @@ Respond **only in Markdown**, structured like this:
 
 ## 🧮 Accountant Summary
 - ...
-```
+
 """
         )
+
+    def __init__(self, model: str = "llama3-8b-8192", temperature: float = 0.5):
+        load_dotenv()
+        self.chat = ChatGroq(
+            model=model,
+            temperature=temperature,
+        ) # type: ignore
 
     def summarize(self, audit_data: dict) -> str:
         """Send audit JSON to LLaMA 3 and return structured markdown summary"""
@@ -59,11 +62,8 @@ Respond **only in Markdown**, structured like this:
 
 # Usage Example
 if __name__ == "__main__":
-    from dotenv import load_dotenv
     from rich.console import Console
     from rich.markdown import Markdown
-
-    load_dotenv()
 
     audit_json = {
         "summary": {
