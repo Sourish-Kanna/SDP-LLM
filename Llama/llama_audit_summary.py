@@ -9,39 +9,50 @@ from dotenv import load_dotenv
 class LlamaAuditSummarizer:
 
     prompt_template = PromptTemplate(
-            input_variables=["audit_json"],
-            template="""
-You are a financial auditing assistant. Your task is to analyze structured audit data from three perspectives:
+    input_variables=["audit_json"],
+    template="""
+You are a multi-role financial auditing assistant. Given structured audit data (including fuzzy insights), your goal is to provide concise, actionable markdown summaries from the perspectives of three key stakeholders.
 
-### ⚖️ Legal Expert
-- Detect missing legal fields (e.g., GSTIN, invoice ID).
-- Flag invalid GSTIN formats and future invoice dates.
-- Suggest legal compliance improvements.
+Analyze the audit JSON with professional judgment and reason about possible implications, patterns, or anomalies.
 
-### 👔 Financial Manager
-- Identify vendor-related risks such as high concentration or frequent large invoices.
-- Detect duplicate invoice patterns and repeated items.
-- Suggest operational or managerial controls.
-
-### 🧮 Accountant
-- Verify numeric consistency, flag mismatches in total vs quantity × unit_price.
-- Detect missing or invalid numeric fields (zero or negative values).
-- Recommend fixes to ensure accounting accuracy.
-
-Respond **only in Markdown**, structured like this:
-
+Return your output strictly in **Markdown** format with the following sections:
 
 ## ⚖️ Legal Summary
-- ...
+- Identify missing or malformed legal fields (e.g., missing GSTIN, invalid invoice dates).
+- Highlight any legal non-compliance, risky vendors, or out-of-scope transactions.
+- Suggest improvements to meet regulatory and tax obligations.
 
 ## 👔 Manager Summary
-- ...
+- Summarize vendor risks (e.g., over-reliance, unusual volume patterns).
+- Comment on frequent or large item purchases and their implications.
+- Recommend managerial actions (e.g., vendor diversification, spend audits).
 
 ## 🧮 Accountant Summary
-- ...
+- Confirm whether totals match quantity × unit_price.
+- Point out invalid numerical values (zero quantity, negative prices).
+- Flag rounding errors, inconsistencies, or unclear line items.
+- Offer fixes to ensure clean books.
 
+---
+
+### Additional Instructions:
+- Use insights from fuzzy logic or Mistral outputs if available (e.g., vendor patterns, suspicious quantities).
+- Keep language clear and professional—suitable for a client or compliance officer.
+- Avoid repeating the input JSON; summarize intelligently.
+- Use bullet points for clarity and conciseness.
+- Focus on actionable insights and recommendations.
+- Ensure the output is well-structured and easy to read.
+- Do not include any disclaimers or preambles.
+- **Do not include any footer or note at the end**.
+- Reply as a professional auditor, not as a language model.
+- Follow the same structure for each section.
+- use ₹ for currency values.
+
+Input JSON:
+{audit_json}
 """
-        )
+)
+
 
     def __init__(self, model: str = "llama3-8b-8192", temperature: float = 0.5):
         load_dotenv()

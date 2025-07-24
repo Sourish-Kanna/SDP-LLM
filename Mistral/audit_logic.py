@@ -7,8 +7,21 @@ class MistralAuditLogic:
     def __init__(self, invoices: List[Dict[str, Any]]):
         self.invoices = invoices
 
-    def clean_amount(self, value: str) -> float:
-        return float(re.sub(r"[^\d.]", "", value))
+    def clean_amount(self,amount):
+        try:
+            # If it's already a number, return as float
+            if isinstance(amount, (int, float)):
+                return float(amount)
+            
+            # If it's a string, extract the numeric part
+            match = re.search(r"[\d,]+(?:\.\d{1,2})?", amount)
+            if not match:
+                raise ValueError("No valid amount found")
+            return float(match.group().replace(",", ""))
+        
+        except Exception as e:
+            print(f"❌ Failed to clean amount: {amount} → {e}")
+            return None
 
     def detect_total_mismatches(self) -> List[Dict[str, Any]]:
         issues = []
@@ -62,7 +75,11 @@ class MistralAuditLogic:
             vendor = inv["vendor"]
             if not vendor:
                 continue
-            billed_total = sum(self.clean_amount(p["total"]) for p in inv["products"])
+            billed_total = sum(
+                amt for p in inv["products"]
+                if (amt := self.clean_amount(p["total"])) is not None
+                )
+
             if vendor not in summary:
                 summary[vendor] = {"invoice_count": 0, "total_billed": 0.0}
             summary[vendor]["invoice_count"] += 1
