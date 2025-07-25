@@ -1,171 +1,141 @@
-# 📟 Autonomous Audit+ – A Hybrid Agentic Financial Document Auditor
+
+# 📟 SmartAudit LLM: Legal + Managerial + Financial Agent
 
 ## 🔍 Overview
 
-Autonomous Audit+ is a multi-agent hybrid system that performs intelligent auditing on invoice documents (CSV or PDF). It uses:
+SmartAudit LLM is an advanced, autonomous auditing platform designed to analyze and validate financial documents such as invoices in CSV and PDF formats. The system leverages a hybrid architecture that combines:
 
-* **Mistral 7B via Groq**: For rule-based audit logic (duplicate detection, total mismatch, etc.)
-* **LLaMA 3 8B via Groq**: For markdown-formatted summaries, legal/manager/accountant role explanations, and suggestions
-* **React Frontend**: For UI/UX, visualizing audit issues, and exporting reports
-* **FastAPI Backend**: For file processing, audit orchestration, and serving frontend endpoints
+- **Large Language Models (LLMs)**: Uses LLaMA 3 and Mistral SABA-24B via Groq for deep reasoning, pattern detection, and natural language summaries.
+- **Rule-based Logic**: Implements strict compliance and business rules to catch errors, fraud, and inconsistencies.
+- **Multi-Agent Design**: Simulates three expert roles—Legal, Managerial, and Accountant—each providing specialized checks and insights.
 
----
+### What It Does
 
-## 👥 Team Roles
+1. **File Upload & Parsing**: Users upload invoice files (CSV or PDF) through a modern React frontend. The backend parses and normalizes the data into a structured format.
 
-Here’s how **Prem’s role** in the **Mistral audit logic** can be split across the three simulated agent roles: **Legal**, **Manager**, and **Accountant**. Each sub-role corresponds to a part of the audit logic implemented as LangChain tools.
+2. **Automated Auditing**: The FastAPI backend orchestrates the audit process. It first applies rule-based checks (using Mistral SABA-24B) to detect:
+   - Missing or invalid legal fields (e.g., GSTIN, invoice ID)
+   - Future-dated invoices
+   - Vendor concentration and duplicate patterns
+   - Calculation mismatches (e.g., total ≠ quantity × unit price)
+   - Zero or negative values in numeric fields
 
----
+3. **Role-Based Analysis**: The audit results are then passed to LLaMA 3, which generates:
+   - **Legal Summary**: Compliance issues, missing fields, and legal risks
+   - **Manager Summary**: Vendor risks, operational patterns, and managerial suggestions
+   - **Accountant Summary**: Numeric consistency, calculation errors, and accounting recommendations
 
-## 👤 **Prem – Mistral + Audit Logic**
+4. **Visual Reporting**: The frontend displays the results as role-based markdown summaries, interactive tables, and visual dashboards. Users can export the findings as PDF or markdown reports.
 
-### ⚖️ Legal Agent Logic
+5. **Extensible & Modular**: The architecture is agentic and modular, making it easy to add new rules, models, or UI features.
 
-Prem is responsible for implementing tools and rules that simulate legal and compliance checks:
+This approach ensures that every uploaded invoice is checked from multiple expert perspectives, providing actionable insights and reducing the risk of fraud, errors, or non-compliance.
 
-* ✅ Check **GST compliance** (e.g., GST% must be 5%, 12%, or 18%)
-* ✅ Validate **GSTIN format** (15-character alphanumeric)
-* ✅ Flag invoices with **future dates**
-* ✅ Identify **missing legal fields** (like vendor name or invoice ID)
-
----
-
-### 👔 Manager Agent Logic
-
-Prem builds logic to simulate the financial oversight of a manager:
-
-* ✅ Detect **vendor concentration** (one vendor dominates total billing)
-* ✅ Flag **high-value invoices** or frequent identical amounts
-* ✅ Aggregate **total spending per vendor**
-* ✅ Identify **repeated patterns** (same items, prices)
+The system is ideal for businesses, auditors, and finance teams seeking automated, explainable, and multi-faceted audit intelligence.
 
 ---
 
-### 🧮 Accountant Agent Logic
-
-Prem creates fine-grained financial validation tools:
-
-* ✅ Detect **total mismatch**: `total ≠ quantity × unit_price`
-* ✅ Identify **missing fields** in numeric columns (quantity, unit\_price)
-* ✅ Flag **zero or negative values**
-* ✅ Ensure all invoices are **numerically consistent**
+SmartAudit LLM combines the power of LLMs and traditional audit logic to deliver a comprehensive, explainable, and user-friendly financial document auditing solution.
 
 ---
 
-### ↺ Integration
+SmartAudit LLM is an autonomous, multi-agent system for intelligent auditing of financial documents (CSV/PDF). It combines legal, managerial, and financial expertise using LLMs (LLaMA 3, Mistral SABA-24B) and a hybrid rule-based + generative approach. The system features:
 
-Prem will:
-
-* Implement all the above checks using LangChain tools
-* Chain them inside a Mistral-powered agent using RAG
-* Return structured output JSON
-* Parses incoming CSV/PDF (after receiving from frontend)
-* Generates document embeddings for RAG
-* Sets up Mistral 7B + Groq agent
-* Returns audit JSON summary to Sourish/frontend
-
-## 👤 **Sourish – LLaMA 3 + Summary Generator**
-
-Here’s how Sourish’s work maps to the three roles used in LLaMA prompting:
-
-### ⚖️ Legal Role (Prompt Design)
-
-* 📜 Craft prompts asking for legal compliance issues based on audit JSON
-* 🧠 Ask LLaMA to identify missing fields like GST, invoice format, future dates
-
-### 👔 Manager Role (Prompt Design)
-
-* 📊 Request financial oversight comments: overbilling patterns, large invoices, vendor risk
-* 🧠 Ask LLaMA to suggest business improvements or controls
-
-### 🧮 Accountant Role (Prompt Design)
-
-* 🔍 Ask LLaMA to verify totals, identify calculation errors, zero values
-
-* ✏️ Summarize per-invoice anomalies in clear English
-
-* Receives audit output (JSON) from Prem
-
-* Sends prompt to LLaMA 3 via Groq for:
-
-  * Summary generation
-  * Role-based analysis (Legal, Manager, Accountant)
-  * Suggestions for future prevention
-
-* Formats LLaMA 3 output into:
-
-  * Markdown (for frontend display)
-  * PDF (optional)
-
-* Collaborates with Parth to render outputs in UI
-
-## 👤 **Parth – Frontend (React)**
-
-Parth’s UI displays outputs aligned with each expert role:
-
-### ⚖️ Legal View
-
-* 📜 Render missing GST fields, invalid GSTINs, and date flags
-* ⚠️ Show legal risk badges or highlights in UI
-
-### 👔 Manager View
-
-* 📊 Display spending distribution, vendor risk, frequent invoice patterns
-* 📈 Include bar charts / graphs for visual summaries
-
-### 🧲 Accountant View
-
-* 🧲 Highlight mismatched totals or zero values directly in invoice table
-
-* ✅ Show green checks for verified fields
-
-* Builds UI for:
-
-  * Invoice upload (CSV/PDF)
-  * Audit result visualization
-  * Role-based explanations (as cards or tabs)
-  * Export/download report (PDF or Markdown)
-
-* Calls FastAPI endpoints for audit and summary
-
-* Displays errors using icons/highlights (e.g., red rows, warnings)
-
-* Adds charts using Recharts or Chart.js (vendor totals, error counts)
+- **LLaMA 3 via Groq**: Generates markdown summaries and role-based insights (Legal, Manager, Accountant)
+- **Mistral SABA-24B via Groq**: Performs rule-based audit logic (duplicate detection, total mismatch, compliance checks)
+- **React Frontend**: User interface for uploading files, visualizing audit results, and exporting reports
+- **FastAPI Backend**: Handles file processing, audit orchestration, and API endpoints
 
 ---
 
-## 📁 Project File Structure
+## 🚀 Features
+
+- Upload and audit invoices in CSV or PDF format
+- Automated legal, managerial, and accounting checks
+- Role-based markdown summaries for easy understanding
+- Visual dashboards and exportable reports
+- Modular, agentic architecture for extensibility
+
+---
+
+---
+
+**Note:** This project uses the `mistral-saba-24b` model for audit logic by default.
+
+## 🏗️ Project Structure
 
 ```text
-Frontend/               # React-based frontend UI (Parth)
-Backend/                # FastAPI backend for coordination (Sourish)
-Parser/                 # File input and parsing logic (Sourish)
-├── Csv parser.py
-└── PDF Parser.py
+Frontend/               # React-based frontend UI
+Backend/                # FastAPI backend for coordination
+parsers/                # File input and parsing logic
+├── csv_parser.py
+└── pdf_parser.py
 sample_data/            # Sample CSV and PDF invoices for testing
-Llama/                  # Summary generation and prompt logic (Sourish)
-Mistal/                 # Audit tools and rule-based logic (Prem)
-Readme.md               # Project documentation
-Requirments.txt         # Python dependencies
+Llama/                  # Summary generation and prompt logic
+Mistal/                 # Audit tools and rule-based logic
+README.md               # Project documentation
+requirements.txt        # Python dependencies
 test.py                 # Python test file
 ```
 
 ---
 
-## ↻ Flow Summary
+## 🧑‍💼 Agent Roles & Logic
+
+### ⚖️ Legal Agent
+
+- GST compliance checks (GST%, GSTIN format)
+- Flags future invoice dates
+- Identifies missing legal fields (vendor, invoice ID)
+
+### 👔 Manager Agent
+
+- Detects vendor concentration and high-value invoices
+- Flags frequent identical amounts and repeated patterns
+- Aggregates total spending per vendor
+
+### 🧮 Accountant Agent
+
+- Detects total mismatches (`total ≠ quantity × unit_price`)
+- Flags missing/invalid numeric fields (zero/negative values)
+- Ensures numerical consistency across invoices
+
+---
+
+## 🔄 Workflow
 
 ```mermaid
-A[User Uploads Invoice File<br>(CSV or PDF) - React UI] --> B[FastAPI Backend<br>(Parse & Normalize - Sourish)]
-B --> C[Mistral Audit - Prem<br>(Validation & RAG Agent)]
+A[User Uploads Invoice File (CSV/PDF) - React UI] --> B[FastAPI Backend (Parse & Normalize)]
+B --> C[Mistral Audit (Validation & RAG Agent)]
 C --> D[Audit JSON Output]
-D --> E[LLaMA 3 Prompting - Sourish<br>(Summary, Roles, Suggestions)]
+D --> E[LLaMA 3 Prompting (Summary, Roles, Suggestions)]
 E --> F[Markdown / PDF Report]
-F --> G[React UI - Parth<br>(Render Cards, Tables, Charts)]
+F --> G[React UI (Render Cards, Tables, Charts)]
 ```
 
 ---
 
-## 🧪 Generalized JSON Input Format (to Mistral)
+## 📦 Installation
+
+1. **Clone the repository**
+2. **Install Python dependencies:**
+
+   ```sh
+   pip install -r requirements.txt
+   ```
+
+3. **Install frontend dependencies:**
+
+   ```sh
+   cd Frontend
+   npm install
+   ```
+
+4. **Set up environment variables** (see `.env.example` if provided)
+
+---
+
+## 🧪 Example JSON Input (to Mistral)
 
 ```json
 [
@@ -185,12 +155,9 @@ F --> G[React UI - Parth<br>(Render Cards, Tables, Charts)]
 ]
 ```
 
-* Each `products[]` entry represents one line item per invoice.
-* Fields should be validated and parsed by the backend before sending to Mistral.
-
 ---
 
-## 📅 Generalized JSON Output Format (from Mistral)
+## 🧾 Example JSON Output (from Mistral)
 
 ```json
 {
@@ -230,5 +197,16 @@ F --> G[React UI - Parth<br>(Render Cards, Tables, Charts)]
 }
 ```
 
-* This structure ensures full compatibility with markdown summaries and role-based prompts for LLaMA 3.
-* Fields are grouped to support modular display by Legal, Manager, and Accountant views.
+---
+
+## 👥 Authors
+
+- **Sourish** – LLaMA 3 + Summary Generator, Backend
+- **Prem** – Mistral Audit Logic, Rule-based Tools
+- **Parth** – Frontend (React), UI/UX
+
+---
+
+## 📄 License
+
+MIT License
