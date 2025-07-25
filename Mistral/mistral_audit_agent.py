@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from Mistral.audit_logic import MistralAuditLogic
 
 class InvoiceAuditAgent:
-    def __init__(self, model: str = "mistral-saba-24b", temperature: float = 0.3):
+    def __init__(self, model: str = "mistral-saba-24b", temperature: float = 0.2):
         load_dotenv()
         self.chat = ChatGroq(
             model=model,
