@@ -9,3 +9,7 @@ fastapi
 uvicorn
 python-dotenv
 rich
+langchain-groq
+python-dotenv
+rich
+pandas
