@@ -30,6 +30,8 @@ def print_and_summarize(raw_invoices, parser_name):
         markdown = Markdown(markdown_summary)
         console.print(markdown)
 
+        print(summarizer.chat("What are the key insights from this audit?"))
+
 if __name__ == "__main__":
     csv_invoices = csv_parser('./sample_data/test1.csv')
     # print_and_summarize(csv_invoices, "CSV Parser")

@@ -10,21 +10,7 @@ import time
 import random
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
 load_dotenv()
-
-# --- Import existing backend components ---
-# Assuming these files are in a structured directory like:
-# .
-# ├── main.py
-# ├── Llama/
-# │   └── llama_audit_summary.py
-# ├── Mistral/
-# │   ├── audit_logic.py
-# │   └── mistral_audit_agent.py
-# └── parsers/
-#     ├── csv_parser.py
-#     └── pdf_parser.py
 
 # Import LlamaAuditSummarizer
 try:
@@ -159,11 +145,3 @@ async def perform_audit(
             if os.path.exists(path):
                 os.remove(path)
                 print(f"Cleaned up temporary file: {path}")
-
-# To run this FastAPI application:
-# 1. Save this code as `main.py`
-# 2. Ensure you have the `Llama`, `Mistral`, and `parsers` directories with the respective files.
-# 3. Install dependencies: `pip install fastapi uvicorn python-multipart pandas PyPDF2 langchain-groq python-dotenv`
-# 4. Create a `.env` file in the same directory as `main.py` with your Groq API key:
-#    `GROQ_API_KEY="your_groq_api_key_here"`
-# 5. Run the application from your terminal: `uvicorn main:app --reload --port 5000`
