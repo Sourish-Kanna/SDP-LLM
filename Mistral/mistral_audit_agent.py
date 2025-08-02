@@ -17,7 +17,9 @@ class InvoiceAuditAgent:
         self.chat = ChatGroq(
             model=model,
             temperature=temperature,
-        )
+            api_key=os.getenv("GROQ_API_KEY")  # type: ignore
+        )  # type: ignore
+
         self.prompt_template = PromptTemplate(
             input_variables=["audit_json"],
             template=self._load_template(),

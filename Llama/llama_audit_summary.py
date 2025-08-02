@@ -1,33 +1,36 @@
 from langchain_groq import ChatGroq
-from langchain.prompts import PromptTemplate
 from langchain.schema import SystemMessage, HumanMessage
-import json
 from dotenv import load_dotenv
-
-
+import json
+import os
 
 class LlamaAuditSummarizer:
+    def __init__(self, model: str = "llama3-8b-8192", temperature: float = 0.5):
+        load_dotenv()
+        self.chat = ChatGroq(
+            model=model,
+            temperature=temperature,
+            api_key=os.getenv("GROQ_API_KEY")  # type: ignore
+        )  # type: ignore
 
-    prompt_template = PromptTemplate(
-    input_variables=["audit_json"],
-    template="""
+        self.system_prompt = """
 You are a multi-role financial auditing assistant. Given structured audit data (including fuzzy insights), your goal is to provide concise, actionable markdown summaries from the perspectives of three key stakeholders.
 
 Analyze the audit JSON with professional judgment and reason about possible implications, patterns, or anomalies.
 
 Return your output strictly in **Markdown** format with the following sections:
 
-## ⚖️ Legal Summary
+##  Legal Summary
 - Identify missing or malformed legal fields (e.g., missing GSTIN, invalid invoice dates).
 - Highlight any legal non-compliance, risky vendors, or out-of-scope transactions.
 - Suggest improvements to meet regulatory and tax obligations.
 
-## 👔 Manager Summary
+##  Manager Summary
 - Summarize vendor risks (e.g., over-reliance, unusual volume patterns).
 - Comment on frequent or large item purchases and their implications.
 - Recommend managerial actions (e.g., vendor diversification, spend audits).
 
-## 🧮 Accountant Summary
+##  Accountant Summary
 - Confirm whether totals match quantity × unit_price.
 - Point out invalid numerical values (zero quantity, negative prices).
 - Flag rounding errors, inconsistencies, or unclear line items.
@@ -46,32 +49,20 @@ Return your output strictly in **Markdown** format with the following sections:
 - **Do not include any footer or note at the end**.
 - Reply as a professional auditor, not as a language model.
 - Follow the same structure for each section.
-- use ₹ for currency values.
-
-Input JSON:
-{audit_json}
+- Use ₹ for currency values.
 """
-)
-
-
-    def __init__(self, model: str = "llama3-8b-8192", temperature: float = 0.5):
-        load_dotenv()
-        self.chat = ChatGroq(
-            model=model,
-            temperature=temperature,
-        ) # type: ignore
 
     def summarize(self, audit_data: dict) -> str:
-        """Send audit JSON to LLaMA 3 and return structured markdown summary"""
+        """Send audit JSON to LLaMA 3 and return structured markdown summary."""
         messages = [
-            SystemMessage(content=self.prompt_template.template),
-            HumanMessage(content=f"```json\n{json.dumps(audit_data, indent=2)}\n```")
+            SystemMessage(content=self.system_prompt),
+            HumanMessage(content=f"{json.dumps(audit_data, indent=2)}")
         ]
         response = self.chat.invoke(messages)
-        return response.content # type: ignore
+        return response.content  # type: ignore
 
 
-# Usage Example
+# ✅ Usage Example
 if __name__ == "__main__":
     from rich.console import Console
     from rich.markdown import Markdown
@@ -111,6 +102,7 @@ if __name__ == "__main__":
 
     summarizer = LlamaAuditSummarizer()
     markdown_summary = summarizer.summarize(audit_json)
+    
     console = Console()
     markdown = Markdown(markdown_summary)
     console.print(markdown)
