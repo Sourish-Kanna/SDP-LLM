@@ -137,6 +137,7 @@ async def perform_audit(
         # The LlamaSummarizer expects the entire audit_json as its input
         print("Summarizing audit data with LlamaAuditSummarizer...")
         final_summary_markdown = llama_summarizer.summarize(audit_output)
+        print(f"Final summary generated:\n{final_summary_markdown}")
         print("LlamaAuditSummarizer completed.")
 
         return JSONResponse(content={"response": final_summary_markdown})
