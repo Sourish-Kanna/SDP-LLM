@@ -60,7 +60,11 @@ Return your output strictly in **Markdown** format with the following sections:
         ]
         response = self.chat.invoke(messages)
         return response.content  # type: ignore
-
+    
+    def chat(self, messages: str) -> str:
+        """Send a chat message to the LLaMA model and return the response."""
+        response = self.chat.invoke(messages)
+        return response.content
 
 # ✅ Usage Example
 if __name__ == "__main__":

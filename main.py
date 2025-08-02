@@ -125,7 +125,11 @@ async def perform_audit(
 
         if not raw_invoices:
             # If no files were uploaded or parsed, return an error
-            raise HTTPException(status_code=400, detail="No valid invoice data found. Please upload CSV or PDF files.")
+            print(message)
+            res = llama_summarizer.chat(message)
+            return JSONResponse(content={"response": res})
+
+            # raise HTTPException(status_code=400, detail="No valid invoice data found. Please upload CSV or PDF files.")
 
         # Step 1: Run through InvoiceAuditAgent (which includes MistralAuditLogic)
         # This generates the structured audit_json with fuzzy insights
@@ -137,7 +141,7 @@ async def perform_audit(
         # The LlamaSummarizer expects the entire audit_json as its input
         print("Summarizing audit data with LlamaAuditSummarizer...")
         final_summary_markdown = llama_summarizer.summarize(audit_output)
-        print(f"Final summary generated:\n{final_summary_markdown}")
+        # print(f"Final summary generated:\n{final_summary_markdown}")
         print("LlamaAuditSummarizer completed.")
 
         return JSONResponse(content={"response": final_summary_markdown})
