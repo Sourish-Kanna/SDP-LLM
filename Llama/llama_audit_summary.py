@@ -7,7 +7,7 @@ import os
 class LlamaAuditSummarizer:
     def __init__(self, model: str = "llama3-8b-8192", temperature: float = 0.5):
         load_dotenv()
-        self.chat = ChatGroq(
+        self.chat_model = ChatGroq(
             model=model,
             temperature=temperature,
             api_key=os.getenv("GROQ_API_KEY")  # type: ignore
@@ -58,13 +58,13 @@ Return your output strictly in **Markdown** format with the following sections:
             SystemMessage(content=self.system_prompt),
             HumanMessage(content=f"{json.dumps(audit_data, indent=2)}")
         ]
-        response = self.chat.invoke(messages)
+        response = self.chat_model.invoke(messages)
         return response.content  # type: ignore
     
-    def chat(self, messages: str) -> str:
+    def chat(self, messages_text: str) -> str:
         """Send a chat message to the LLaMA model and return the response."""
-        print(messages)
-        response = self.chat.invoke(messages)
+        print(messages_text)
+        response = self.chat_model.invoke([HumanMessage(content=messages_text)])
         return response.content
 
 # ✅ Usage Example
