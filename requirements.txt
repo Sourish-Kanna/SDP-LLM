@@ -10,3 +10,4 @@ uvicorn
 python-dotenv
 rich
 python-multipart
+json5
