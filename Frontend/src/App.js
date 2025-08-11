@@ -109,8 +109,10 @@ const FinancialAuditUI = () => {
         formData.append('pdf_file', pdfFile);
       }
 
+      const apiUrl = process.env.REACT_APP_API_URL;
+
       // Make a fetch call to the backend API
-      const response = await fetch('http://127.0.0.1:8000/audit', { // Updated endpoint URL
+      const response = await fetch(`${apiUrl}/audit`, {
         method: 'POST',
         body: formData, // Send as FormData for file uploads
       });
