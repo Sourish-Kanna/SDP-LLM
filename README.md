@@ -105,12 +105,13 @@ test.py                 # Python test file
 ## 🔄 Workflow
 
 ```mermaid
-A[User Uploads Invoice File (CSV/PDF) - React UI] --> B[FastAPI Backend (Parse & Normalize)]
-B --> C[Mistral Audit (Validation & RAG Agent)]
-C --> D[Audit JSON Output]
-D --> E[LLaMA 3 Prompting (Summary, Roles, Suggestions)]
-E --> F[Markdown / PDF Report]
-F --> G[React UI (Render Cards, Tables, Charts)]
+graph TD
+    A["User Uploads Invoice File (CSV/PDF) - React UI"] --> B["FastAPI Backend (Parse & Normalize)"]
+    B --> C["Mistral Audit (Validation & RAG Agent)"]
+    C --> D["Audit JSON Output"]
+    D --> E["LLaMA 3 Prompting (Summary, Roles, Suggestions)"]
+    E --> F["Markdown / PDF Report"]
+    F --> G["React UI (Render Cards, Tables, Charts)"]
 ```
 
 ---
