@@ -9,7 +9,7 @@ from Mistral.audit_logic import MistralAuditLogic
 
 
 class InvoiceAuditAgent:
-    def __init__(self, model: str = "qwen/qwen3-32b", temperature: float = 0.2):
+    def __init__(self, model: str = "llama-3.3-70b-versatile", temperature: float = 0.2):
         load_dotenv()
         self.chat = ChatGroq(
             model=model,
@@ -23,35 +23,42 @@ class InvoiceAuditAgent:
 
     def _load_template(self) -> str:
         return ("""
-You are an AI Auditor powered by the Qwen model.
-You receive invoice audit JSON and must add fuzzy insights using general reasoning.
-- Is the item mix unusual?
-- Are quantities suspicious?
-- Are there vendors with only one invoice?
-- Are any items zero quantity or zero billed?
-- Do repeated amounts or frequent items show patterns?
+You are a specialized AI agent for financial data analysis. Your only function is to generate a JSON object containing analytical insights.
 
-Return ONLY valid JSON.
-Rules:
-- ALL property names must be in double quotes.
-- ALL string values must be in double quotes.
-- Do NOT include markdown, code fences, or any explanation text.
-- Do NOT include extra keys — only return "fuzzy_insights".
+Analyze the provided invoice audit JSON based on the following detection rules to identify potential anomalies and patterns:
+1.  **Unusual Item Mix:** Are there strange combinations of items on a single invoice (e.g., office supplies and heavy machinery)?
+2.  **Suspicious Quantities:** Are the quantities unusually high or low for the item type (e.g., 1000 laptops, 0.5 chairs)?
+3.  **Single-Invoice Vendors:** Does a vendor appear only once in the entire dataset? This can sometimes indicate a one-off, potentially risky transaction.
+4.  **Zero Value Items:** Are any line items listed with a quantity or billed amount of zero?
+5.  **Pattern Recognition:** Are there frequently repeated, non-round amounts or items that suggest automated billing or potential duplication?
 
-Example output:
+## JSON Output Requirements
+- Your entire response must be a single, valid JSON object.
+- The root object must contain ONLY one key: `"fuzzy_insights"`.
+- The value of `"fuzzy_insights"` must be an array of insight objects.
+- Each insight object must have two keys: `"type"` (a string) and `"description"` (a string).
+- Do NOT include markdown, code fences (` ``` `), or any explanatory text outside of the JSON structure.
+
+## Example Output
+```json
 {{
   "fuzzy_insights": [
-    {{ "type": "suspicious_quantity", "description": "..." }},
-    {{ "type": "vendor_pattern", "description": "..." }}
+    {{
+      "type": "suspicious_quantity",
+      "description": "Invoice INV-123 contains an unusually high quantity of 500 keyboards for a small-medium enterprise."
+    }},
+    {{
+      "type": "single_invoice_vendor",
+      "description": "Vendor 'Global Tech Solutions' has only one invoice in this batch, which may warrant further review."
+    }},
+    {{
+      "type": "zero_value_item",
+      "description": "Line item 'Promotional Pens' on invoice INV-456 has a quantity of 200 but a billed amount of zero."
+    }}
   ]
 }}
-
-Do not return any other text or explanations, just the JSON.
-Do not return any other keys, just the "fuzzy_insights" key.
-Do not include ``` and json at the start or end of your response.
-
-Input JSON:
-{{ audit_json }}
+# Input JSON:
+# {{ audit_json }}
 """)
 
     def _extract_json(self, text: str) -> Dict[str, Any]:
